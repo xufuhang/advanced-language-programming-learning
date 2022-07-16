@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ncepu.alpl.dao.DmsCommentReplyDao">
+
+    <resultMap id="CommentReplyDetailMap"
+               type="cn.ncepu.alpl.domain.DmsCommentReplyDetail"
+               extends="cn.ncepu.alpl.mapper.DmsCommentReplyMapper.BaseResultMap">
+        <association property="fromUser"
+                     resultMap="cn.ncepu.alpl.mapper.UmsUserMapper.BaseResultMap"
+                     columnPrefix="f_">
+        </association>
+        <association property="toUser"
+                     resultMap="cn.ncepu.alpl.mapper.UmsUserMapper.BaseResultMap"
+                     columnPrefix="t_">
+        </association>
+    </resultMap>
+
+    <delete id="deleteByIdAndFromUserId">
+        DELETE
+        FROM dms_comment_reply
+        WHERE id = #{commentReplyId}
+          AND from_user_id = #{fromUserId}
+    </delete>
+
+    <select id="selectByCommentId" resultMap="CommentReplyDetailMap">
+        SELECT c.*,
+        f.id f_id,
+        f.username f_username,
+        f.nickname f_nickname,
+        f.avatar f_avatar,
+        t.id t_id,
+        t.nickname t_nickname,
+        t.avatar t_avatar
+        FROM dms_comment_reply c
+        INNER JOIN ums_user f on f.id = c.from_user_id
+        LEFT JOIN ums_user t on t.id = c.to_user_id
+        WHERE comment_id = #{commentId}
+        ORDER BY topping_sort DESC,
+        <choose>
+            <when test="sortByStars">
+                c.stars DESC
+            </when>
+            <when test="sortByCreateTime">
+                c.create_time DESC
+            </when>
+            <otherwise>
+                c.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectByCommentIdForUpdate" resultMap="cn.ncepu.alpl.mapper.DmsCommentReplyMapper.BaseResultMap">
+        SELECT id
+        FROM dms_comment_reply
+        WHERE comment_id = #{commentId}
+            FOR UPDATE
+    </select>
+
+    <select id="selectMaxToppingSortByCommentId" resultType="java.lang.Integer">
+        SELECT IFNULL(MAX(topping_sort), 0)
+        FROM dms_comment_reply
+        WHERE comment_id = #{commentId}
+    </select>
+
+    <update id="updateIncrStars">
+        UPDATE dms_comment_reply
+        SET stars = stars + #{count}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

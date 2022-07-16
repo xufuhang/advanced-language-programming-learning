@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.ncepu.alpl.dao.UmsOptionDao">
+
+    <select id="queryByRoleId" resultType="cn.ncepu.alpl.model.UmsOption">
+        SELECT DISTINCT o.*
+        FROM ums_role r
+                 INNER JOIN ums_role_option_relation ror on r.id = ror.role_id
+                 INNER JOIN ums_option o on ror.option_id = o.id
+        WHERE r.id = #{roleId}
+    </select>
+
+</mapper>

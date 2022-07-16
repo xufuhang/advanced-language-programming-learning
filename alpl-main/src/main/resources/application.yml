@@ -1,0 +1,41 @@
+#spring:
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/program_learning_web?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+#  redis:
+#    host: 192.168.111.33
+#    port: 6379
+#    password: alpl2022xufuhang
+#minio:
+#  endpoint: http://192.168.111.33:9000
+#  access-key: admin
+#  secret-key: alpl2022xufuhang
+#  bucket-name: alpl
+
+default-host: localhost
+mysql-port: 3306
+redis-port: 6379
+minio-port: 9000
+#mysql-port: 22306
+#mysql-password: alpl2022xufuhang
+#redis-port: 22379
+#minio-port: 22001
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:${mysql-port}/program_learning_web?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: root
+#    password: alpl2022xufuhang
+    password: 123456
+  redis:
+    host: localhost
+    port: ${redis-port}
+#    password: alpl2022xufuhang
+minio:
+  endpoint: http://localhost:${minio-port}
+  access-key: admin
+#  secret-key: alpl2022xufuhang
+  secret-key: xufuhang
+  bucket-name: alpl
+  avatar-bucket: avatar
+server:
+  port: 22001

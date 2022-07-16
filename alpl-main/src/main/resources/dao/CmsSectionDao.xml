@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ncepu.alpl.dao.CmsSectionDao">
+
+    <resultMap id="SectionDetailMap"
+               type="cn.ncepu.alpl.domain.CmsSectionDetail"
+               extends="cn.ncepu.alpl.mapper.CmsSectionMapper.BaseResultMap">
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+    </resultMap>
+
+    <insert id="insertSelectiveAutoIncrSort" useGeneratedKeys="true">
+        INSERT INTO cms_section
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="section.title != null">
+                title,
+            </if>
+            <if test="section.chapterId != null">
+                chapter_id,
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" prefixOverrides=",">
+            <if test="section.title != null">
+                #{section.title},
+            </if>
+            <if test="section.chapterId != null">
+                #{section.chapterId},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="selectMaxSortByChapterId"
+            resultType="java.lang.Integer">
+        SELECT IFNULL(MAX(sort), 0)
+        FROM cms_section
+        WHERE chapter_id = #{chapterId}
+    </select>
+
+    <select id="selectByCondition" resultType="cn.ncepu.alpl.model.CmsSection">
+        SELECT *
+        FROM cms_section
+        <where>
+            <if test="section.id != null">
+                id = #{section.id}
+            </if>
+            <if test="section.title != null">
+                title = #{section.title}
+            </if>
+            <if test="section.sort != null">
+                sort = #{section.sort}
+            </if>
+            <if test="section.chapterId != null">
+                chapter_id = #{section.chapterId}
+            </if>
+        </where>
+        <if test="sorted">
+            ORDER BY sort
+        </if>
+    </select>
+
+    <select id="selectDetailById" resultMap="SectionDetailMap">
+        SELECT s.*,
+               c.content content
+        FROM cms_section s
+                 LEFT JOIN cms_content c on s.id = c.id
+        WHERE s.id = #{id}
+    </select>
+
+    <update id="updateSortGreaterThanTheNum">
+        UPDATE cms_section
+        SET sort = sort + 1
+        WHERE sort >= #{section.sort}
+          AND chapter_id = #{section.chapterId}
+    </update>
+
+    <update id="updateByExample">
+        UPDATE cms_section
+        <set>
+            <if test="section.title != null">
+                title = #{section.title},
+            </if>
+            <if test="section.sort != null">
+                sort = #{section.sort},
+            </if>
+            <if test="section.chapterId != null">
+                chapter_id = #{section.chapterId}
+            </if>
+        </set>
+        WHERE id = #{section.id}
+    </update>
+
+    <update id="updateIncrCommentCount">
+        UPDATE cms_section
+        SET comment_count = comment_count + #{num}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateIncrNewCommentCount">
+        UPDATE cms_section
+        SET new_comment_count = new_comment_count + 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

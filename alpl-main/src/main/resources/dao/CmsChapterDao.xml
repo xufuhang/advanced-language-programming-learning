@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ncepu.alpl.dao.CmsChapterDao">
+
+    <insert id="insertSelectiveWithId">
+        INSERT INTO cms_content
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="content.content != null">
+                content
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            #{content.id},
+            <if test="content.content != null">
+                #{content.content}
+            </if>
+        </trim>
+    </insert>
+
+    <select id="selectMaxSortByModuleId" resultType="java.lang.Integer">
+        SELECT IFNULL(MAX(sort), 0)
+        FROM cms_chapter
+        WHERE module_Id = #{moduleId}
+    </select>
+
+    <select id="selectByIdForUpdate" resultType="java.lang.Void">
+        SELECT id
+        FROM cms_chapter
+        WHERE id = #{id}
+            FOR UPDATE
+    </select>
+
+    <update id="updateSortGreaterThanTheNum">
+        UPDATE cms_chapter
+        SET sort = sort + 1
+        WHERE module_id = #{chapter.moduleId}
+          AND sort >= #{chapter.sort}
+    </update>
+
+    <update id="updateIncrNewCommentCount">
+        UPDATE cms_chapter
+            SET new_comment_count = new_comment_count + #{count}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByCondition" resultType="cn.ncepu.alpl.model.CmsChapter">
+        SELECT *
+        FROM cms_chapter
+        <where>
+            <if test="chapter.title != null">
+                title = #{chapter.title}
+            </if>
+            <if test="chapter.sort != null">
+                sort = #{chapter.sort}
+            </if>
+            <if test="chapter.moduleId != null">
+                module_id = #{chapter.moduleId}
+            </if>
+        </where>
+        ORDER BY sort
+    </select>
+
+</mapper>

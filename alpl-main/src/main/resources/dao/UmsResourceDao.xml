@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.ncepu.alpl.dao.UmsResourceDao">
+
+    <select id="selectListByUserId" resultMap="cn.ncepu.alpl.mapper.UmsResourceMapper.BaseResultMap">
+        SELECT DISTINCT r.id   id,
+                        r.name name
+        FROM ums_user u
+                 INNER JOIN ums_user_role_relation uurr on u.id = uurr.user_id
+                 INNER JOIN ums_role role on uurr.role_id = role.id
+                 INNER JOIN ums_role_resource_relation urrr on uurr.role_id = urrr.role_id
+                 INNER JOIN ums_resource r on urrr.resource_id = r.id
+        WHERE u.id = #{userId}
+    </select>
+
+    <select id="selectByRoleId" resultType="cn.ncepu.alpl.model.UmsResource">
+        SELECT DISTINCT re.*
+        FROM ums_role r
+                 INNER JOIN ums_role_resource_relation rrr on r.id = rrr.role_id
+                 INNER JOIN ums_resource re on rrr.resource_id = re.id
+        WHERE r.id = #{roleId}
+    </select>
+
+</mapper>

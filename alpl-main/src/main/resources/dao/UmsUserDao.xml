@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ncepu.alpl.dao.UmsUserDao">
+
+    <resultMap id="UmsUserDetailMap" type="cn.ncepu.alpl.domain.UmsUserDetail"
+               extends="cn.ncepu.alpl.mapper.UmsUserMapper.BaseResultMap">
+        <collection property="roleList"
+                    resultMap="cn.ncepu.alpl.mapper.UmsRoleMapper.BaseResultMap"
+                    columnPrefix="r_">
+        </collection>
+        <collection property="resourceList"
+                    resultMap="cn.ncepu.alpl.mapper.UmsResourceMapper.BaseResultMap"
+                    columnPrefix="re_">
+        </collection>
+        <collection property="optionList"
+                    resultMap="cn.ncepu.alpl.mapper.UmsOptionMapper.BaseResultMap"
+                    columnPrefix="o_">
+        </collection>
+    </resultMap>
+
+    <resultMap id="SelectUmsUserDetailMap" type="cn.ncepu.alpl.domain.UmsUserDetail"
+               extends="cn.ncepu.alpl.mapper.UmsUserMapper.BaseResultMap">
+        <collection property="roleList"
+                    select="cn.ncepu.alpl.dao.UmsRoleDao.selectListByUserId"
+                    column="id">
+        </collection>
+    </resultMap>
+
+    <insert id="insertList">
+        INSERT INTO ums_user (username, password, nickname, status, create_time)
+        VALUES
+        <foreach collection="list" separator="," item="item" index="index">
+            (#{item.username}, #{item.password}, #{item.nickname}, #{item.status}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateById">
+        UPDATE ums_user
+        SET login_time = #{user.loginTime}
+        WHERE id = #{user.id}
+    </update>
+
+    <select id="selectUserDetailByUsername" resultMap="UmsUserDetailMap">
+        SELECT DISTINCT u.*,
+                        r.id        r_id,
+                        name        r_name,
+                        description r_description
+        FROM ums_user u
+                 LEFT JOIN ums_user_role_relation urr on u.id = urr.user_id
+                 LEFT JOIN ums_role r on urr.role_id = r.id
+        WHERE u.username = #{username};
+    </select>
+
+    <select id="selectUserByUsername" resultType="cn.ncepu.alpl.model.UmsUser">
+        SELECT *
+        FROM ums_user
+        WHERE username = #{username}
+    </select>
+
+    <!--
+    若采用嵌套collection+表关联的方式，会导致page-helper对关联后的结果进行分页，而不是对映射出的结果（List）分页
+    -->
+    <!--    <select id="selectDetailListByCondition" resultMap="UmsUserDetailMap">-->
+    <!--        SELECT DISTINCT u.*,-->
+    <!--        r.id r_id,-->
+    <!--        r.name r_name,-->
+    <!--        role.id role_id,-->
+    <!--        role.name role_name-->
+    <!--        FROM ums_user u-->
+    <!--        INNER JOIN ums_user_role_relation uurr on u.id = uurr.user_id-->
+    <!--        INNER JOIN ums_role role on uurr.role_id = role.id-->
+    <!--        INNER JOIN ums_role_resource_relation urrr on uurr.role_id = urrr.role_id-->
+    <!--        INNER JOIN ums_resource r on urrr.resource_id = r.id-->
+    <!--        <where>-->
+    <!--            <if test="user.username != null">-->
+    <!--                AND username LIKE concat("%", #{user.username}, "%")-->
+    <!--            </if>-->
+    <!--            <if test="user.nickname != null">-->
+    <!--                AND nickname LIKE concat("%", #{user.nickname}, "%")-->
+    <!--            </if>-->
+    <!--            <if test="user.status != null">-->
+    <!--                AND status = #{user.status}-->
+    <!--            </if>-->
+    <!--        </where>-->
+    <!--    </select>-->
+
+    <select id="selectDetailListByCondition" resultMap="SelectUmsUserDetailMap">
+        SELECT DISTINCT *
+        FROM ums_user u
+        <where>
+            <if test="user.username != null">
+                AND username LIKE concat("%", #{user.username}, "%")
+            </if>
+            <if test="user.nickname != null">
+                AND nickname LIKE concat("%", #{user.nickname}, "%")
+            </if>
+            <if test="user.status != null">
+                AND status = #{user.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectRoleListByUserId" resultType="cn.ncepu.alpl.model.UmsRole">
+        SELECT r.*
+        FROM ums_user_role_relation urr
+                 LEFT JOIN ums_role r ON urr.role_id = r.id
+        WHERE urr.user_id = #{id}
+    </select>
+
+    <select id="selectByKeywordAndRoleName" resultType="cn.ncepu.alpl.model.UmsUser">
+        SELECT u.*
+        FROM ums_user u
+        INNER JOIN ums_user_role_relation urr on u.id = urr.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                username LIKE concat("%",#{keyword},"%")
+                OR nickname LIKE concat("%",#{keyword},"%")
+            </if>
+            <if test="roleId != null and roleId != ''">
+                urr.role_id = #{roleId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ncepu.alpl.dao.CmsModuleDao">
+
+    <!--  设置列前缀之后，该resultMap会把符合该前缀的列选中，然后删除列前缀，再匹配属性。
+    如果要嵌套匹配，则一级c_，二级s_，而select语句，一层中的列前缀为c_，二层中的列前缀为加c_s_  -->
+    <resultMap id="CmsChapterDetailMap"
+               type="cn.ncepu.alpl.domain.CmsChapterDetail"
+               extends="cn.ncepu.alpl.mapper.CmsChapterMapper.BaseResultMap">
+        <collection property="sections"
+                    resultMap="cn.ncepu.alpl.mapper.CmsSectionMapper.BaseResultMap"
+                    columnPrefix="s_">
+        </collection>
+    </resultMap>
+    <resultMap id="CmsModuleDetailMap"
+               type="cn.ncepu.alpl.domain.CmsModuleDetail"
+               extends="cn.ncepu.alpl.mapper.CmsModuleMapper.BaseResultMap">
+        <collection property="chapters"
+                    resultMap="CmsChapterDetailMap"
+                    columnPrefix="c_">
+        </collection>
+    </resultMap>
+
+    <select id="selectMaxSort" resultType="java.lang.Integer">
+        SELECT IFNULL(MAX(sort), 0)
+        FROM cms_module
+    </select>
+
+    <select id="selectDetailById" resultMap="CmsChapterDetailMap">
+        (
+            SELECT c.*,
+                   s.id                s_id,
+                   s.title             s_title,
+                   s.sort              s_sort,
+                   s.chapter_id        s_chapter_id,
+                   s.new_comment_count s_new_comment_count
+            FROM cms_chapter c
+                     RIGHT JOIN cms_section s
+                                ON c.id = s.chapter_id
+            WHERE module_id = #{moduleId}
+        )
+        UNION
+        (
+            SELECT c.*,
+                   s.id                s_id,
+                   s.title             s_title,
+                   s.sort              s_sort,
+                   s.chapter_id        s_chapter_id,
+                   s.new_comment_count s_new_comment_count
+            FROM cms_chapter c
+                     LEFT JOIN cms_section s
+                               ON c.id = s.chapter_id
+            WHERE module_id = #{moduleId}
+        )
+        ORDER BY sort, s_sort
+    </select>
+
+    <select id="selectAllForUpdate"
+            resultMap="cn.ncepu.alpl.mapper.CmsModuleMapper.BaseResultMap">
+        SELECT *
+        FROM cms_module
+            FOR UPDATE
+    </select>
+
+    <select id="selectByIdForUpdate"
+            resultMap="cn.ncepu.alpl.mapper.CmsModuleMapper.BaseResultMap">
+        SELECT *
+        FROM cms_module
+        WHERE id = #{moduleId}
+            FOR UPDATE
+    </select>
+
+    <update id="updateSortGreaterThanTheNum">
+        UPDATE cms_module
+        SET sort = sort + 1
+        WHERE sort >= #{sort}
+    </update>
+
+    <update id="updateByIdSelective">
+        UPDATE cms_module
+        <set>
+            <if test="module.name != null">
+                name = #{module.name},
+            </if>
+            <if test="module.sort != null">
+                sort = #{module.sort}
+            </if>
+        </set>
+        WHERE id = #{module.id}
+    </update>
+
+</mapper>
+
+        <!--    <select id="selectByModuleId" resultMap="CmsModuleDetailMap">-->
+        <!--&#45;&#45;         错的写法，应该两次查询联合后再排序-->
+        <!--                (SELECT s.id,-->
+        <!--                        s.title         section_title,-->
+        <!--                        s.sort      section_sort,-->
+        <!--                        c.id            chapter_id,-->
+        <!--                        c.title         chapter_title,-->
+        <!--                        c.sort      chapter_sort,-->
+        <!--                        c.section_count chapter_section_count,-->
+        <!--                        c.module_id-->
+        <!--                 FROM cms_chapter c-->
+        <!--                          RIGHT JOIN-->
+        <!--                      (SELECT *-->
+        <!--                       FROM cms_section-->
+        <!--                       WHERE chapter_id in-->
+        <!--                             (SELECT id-->
+        <!--                              FROM cms_chapter-->
+        <!--                              WHERE module_id = '${moduleId}')-->
+        <!--                       ORDER BY sort-->
+        <!--                      ) AS s-->
+        <!--                      ON s.chapter_id = c.id-->
+        <!--                 ORDER BY c.sort)-->
+        <!--                UNION-->
+        <!--                (SELECT s.id            id,-->
+        <!--                        s.title         section_title,-->
+        <!--                        s.sort      section_sort,-->
+        <!--                        c.id            chapter_id,-->
+        <!--                        c.title         chapter_title,-->
+        <!--                        c.sort      chapter_sort,-->
+        <!--                        c.section_count chapter_section_count,-->
+        <!--                        c.module_id   module_id-->
+        <!--                 FROM cms_chapter c-->
+        <!--                          LEFT JOIN-->
+        <!--                      cms_section s-->
+        <!--                      ON s.chapter_id = c.id-->
+        <!--                 WHERE module_id = '${moduleId}'-->
+        <!--                 ORDER BY c.sort)-->
+        <!--    </select>-->
+
+        <!--    <select id="selectByModuleId" resultMap="CmsModuleDetailMap">-->
+        <!--    写复杂了，其实直接连接再使用where就行了-->
+        <!--        (SELECT s.id        id,-->
+        <!--                s.title     section_title,-->
+        <!--                s.sort      section_sort,-->
+        <!--                c.id        chapter_id,-->
+        <!--                c.title     chapter_title,-->
+        <!--                c.sort      chapter_sort,-->
+        <!--                c.module_id module_id,-->
+        <!--         FROM cms_chapter c-->
+        <!--                  RIGHT JOIN-->
+        <!--              (SELECT *-->
+        <!--               FROM cms_section-->
+        <!--               WHERE chapter_id in-->
+        <!--                     (SELECT id-->
+        <!--                      FROM cms_chapter-->
+        <!--                      WHERE module_id = #{moduleId})-->
+        <!--              ) AS s-->
+        <!--              ON s.chapter_id = c.id)-->
+        <!--        UNION-->
+        <!--        (SELECT s.id            id,-->
+        <!--                s.title         section_title,-->
+        <!--                s.sort          section_sort,-->
+        <!--                c.id            chapter_id,-->
+        <!--                c.title         chapter_title,-->
+        <!--                c.sort          chapter_sort,-->
+        <!--                c.module_id     module_id-->
+        <!--         FROM cms_chapter c-->
+        <!--                  LEFT JOIN-->
+        <!--              cms_section s-->
+        <!--              ON s.chapter_id = c.id-->
+        <!--         WHERE module_id = #{moduleId})-->
+        <!--        ORDER BY chapter_sort, section_sort-->
+        <!--    </select>-->

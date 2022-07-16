@@ -1,0 +1,5 @@
+# Project exclude paths
+/alpl-common/target/
+/alpl-main/target/
+/alpl-mbg/target/
+/alpl-security/target/
