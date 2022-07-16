@@ -5,9 +5,10 @@ import lombok.Data;
 
 import java.util.List;
 
-/*
+/**
 @author xufuhang
 @date 2022/3/29-17:21
+ 通用分页类
 */
 @Data
 public class CommonPage<T> {
