@@ -1,4 +1,2 @@
 # advanced-language-programming-learning
-hello
-hello
-what i want to say is test
+本项目是后端项目，前端项目请看https://github.com/xufuhang/alpl-web
