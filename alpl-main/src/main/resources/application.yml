@@ -18,13 +18,15 @@ mysql-ip: ${default-host}
 mysql-port: 22306
 mysql-username: root
 mysql-password: alpl2022xufuhang
+#mysql-password: 123456
 
 redis-ip: ${default-host}
 redis-port: 22379
 redis-password: alpl2022xufuhang
+#redis-password:
 
 minio-ip: ${default-host}
-minio-port: 22001
+minio-port: 22900
 #minio-port: 9000
 minio-secret-key: alpl2022xufuhang
 #minio-secret-key: xufuhang
