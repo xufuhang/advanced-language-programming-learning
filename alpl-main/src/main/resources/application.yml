@@ -11,30 +11,37 @@
 #  secret-key: alpl2022xufuhang
 #  bucket-name: alpl
 
-default-host: localhost
-mysql-port: 3306
-redis-port: 6379
-minio-port: 9000
-#mysql-port: 22306
-#mysql-password: alpl2022xufuhang
-#redis-port: 22379
-#minio-port: 22001
+#自定义变量
+default-host: 118.230.232.250
+
+mysql-ip: ${default-host}
+mysql-port: 22306
+mysql-username: root
+mysql-password: alpl2022xufuhang
+
+redis-ip: ${default-host}
+redis-port: 22379
+redis-password: alpl2022xufuhang
+
+minio-ip: ${default-host}
+minio-port: 22001
+#minio-port: 9000
+minio-secret-key: alpl2022xufuhang
+#minio-secret-key: xufuhang
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:${mysql-port}/program_learning_web?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
-    username: root
-#    password: alpl2022xufuhang
-    password: 123456
+    url: jdbc:mysql://${mysql-ip}:${mysql-port}/program_learning_web?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: ${mysql-username}
+    password: ${mysql-password}
   redis:
-    host: localhost
+    host: ${redis-ip}
     port: ${redis-port}
-#    password: alpl2022xufuhang
+    password: ${redis-password}
 minio:
-  endpoint: http://localhost:${minio-port}
+  endpoint: http://${minio-ip}:${minio-port}
   access-key: admin
-#  secret-key: alpl2022xufuhang
-  secret-key: xufuhang
+  secret-key: ${minio-secret-key}
   bucket-name: alpl
   avatar-bucket: avatar
 server:
